@@ -19,3 +19,8 @@ jobs:
           commit_email: meshstack@users.noreply.github.com
           install: 'bin.install "meshstack"'
           test: 'assert_match("Usage", shell_output("meshstack --help"))'
+          version: latest
+          download_strategy: github_latest
+          formula_includes: |
+            desc "CLI tool for generating resilient distributed mesh app stacks"
+            homepage "https://github.com/afstanton/meshstack"
