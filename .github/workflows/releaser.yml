@@ -1,0 +1,21 @@
+name: Releaser
+
+on:
+  repository_dispatch:
+    types: [trigger-homebrew-release]
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Release project to Homebrew tap
+        uses: Justintime50/homebrew-releaser@v2
+        with:
+          homebrew_owner: afstanton
+          homebrew_tap: homebrew-meshstack
+          formula_folder: Formula
+          github_token: ${{ secrets.GH_PAT }}
+          commit_owner: meshstack-bot
+          commit_email: meshstack@users.noreply.github.com
+          install: 'bin.install "meshstack"'
+          test: 'assert_match("Usage", shell_output("meshstack --help"))'
