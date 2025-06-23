@@ -39,7 +39,8 @@ jobs:
         with:
           homebrew_owner: afstanton
           homebrew_tap: homebrew-meshstack
-          formula_folder: Formula
+          formula_folder: .
+          formula_includes: meshstack.rb
           install: |
-            brew install --build-from-source Formula/meshstack.rb
+            brew install --build-from-source ./meshstack.rb
           github_token: ${{ secrets.GH_PAT }}
