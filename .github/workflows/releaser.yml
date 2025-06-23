@@ -1,26 +1,45 @@
-name: Releaser
+name: Clone meshstack Release
 
 on:
   repository_dispatch:
     types: [trigger-homebrew-release]
 
 jobs:
-  update:
+  create-release:
     runs-on: ubuntu-latest
     steps:
-      - name: Release project to Homebrew tap
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Fetch latest release from meshstack
+        id: get-release
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/afstanton/meshstack/releases/latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+
+      - name: Create matching release in tap repo
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ fromJson(steps.get-release.outputs.data).tag_name }}
+          name: ${{ fromJson(steps.get-release.outputs.data).name }}
+          body: ${{ fromJson(steps.get-release.outputs.data).body }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+
+  update-homebrew:
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Homebrew Releaser
         uses: Justintime50/homebrew-releaser@v2
         with:
           homebrew_owner: afstanton
           homebrew_tap: homebrew-meshstack
           formula_folder: Formula
+          install: |
+            brew install --build-from-source Formula/meshstack.rb
           github_token: ${{ secrets.GH_PAT }}
-          commit_owner: meshstack-bot
-          commit_email: meshstack@users.noreply.github.com
-          install: 'bin.install "meshstack"'
-          test: 'assert_match("Usage", shell_output("meshstack --help"))'
-          version: latest
-          download_strategy: github_latest
-          formula_includes: |
-            desc "CLI tool for generating resilient distributed mesh app stacks"
-            homepage "https://github.com/afstanton/meshstack"
